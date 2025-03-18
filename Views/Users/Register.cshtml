@@ -1,0 +1,18 @@
+﻿@model RegisterFormModel
+<h1>Register</h1>
+<form method="post">
+    <div asp-validation-summary="ModelOnly" style="color:brown"></div>
+    <label asp-for="Email"></label>
+    <input asp-for="Email" type="email" placeholder="xxx@abv.bg">
+    <br />
+
+    <label asp-for="Password"></label>
+    <input asp-for="Password" type="password">
+    <br />
+
+    <label asp-for="FullName"></label>
+    <input asp-for="FullName" type="text" placeholder="P. Peshov">
+    <br />
+
+    <input type="submit" value="Register" />
+</form>
