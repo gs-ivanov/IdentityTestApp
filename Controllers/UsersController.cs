@@ -2,9 +2,11 @@
 {
     using IdentityTestApp.Data;
     using IdentityTestApp.Models;
+    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Identity;
     using Microsoft.AspNetCore.Mvc;
     using System.Linq;
+    using System.Security.Claims;
     using System.Threading.Tasks;
 
     public class UsersController : Controller
@@ -31,14 +33,21 @@
                 return View(User);
             }
 
-            var registerUser = new User
+            var registeredUser = new User
             {
                 Email = user.Email,
                 UserName = user.Email,
                 FullName = user.FullName
             };
 
-            var result = await this.userManager.CreateAsync(registerUser, user.Password);
+
+            var result = await this.userManager.CreateAsync(registeredUser, user.Password);
+            // Dobavqne na rolq Administrator
+
+            await this.userManager.AddClaimAsync(registeredUser, new Claim(ClaimTypes.Role, "Administrator"));
+
+
+
 
             if (!result.Succeeded)
             {
@@ -58,6 +67,7 @@
         [HttpPost]
         public async Task<IActionResult> Login(LoginFormModel user)
         {
+
             var loggedInUser = await this.userManager.FindByEmailAsync(user.Email);
 
             if (loggedInUser == null)
@@ -72,7 +82,24 @@
                 return InvalidCredentials(user);
             }
 
+            await this.signInManager.SignInAsync(loggedInUser, true);
+
             return RedirectToAction("Index", "Home");
+        }
+
+        public async Task<IActionResult> Logout()
+        {
+            await signInManager.SignOutAsync();
+
+            return RedirectToAction("Login", "Users");
+        }
+
+        [Authorize(Roles = "Administrator")]
+        public async Task<IActionResult> ChangePassword()
+        {
+            var user = await this.userManager.GetUserAsync(this.User);
+
+            return View();
         }
 
         private IActionResult InvalidCredentials(LoginFormModel user)
